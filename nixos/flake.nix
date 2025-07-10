@@ -14,6 +14,21 @@
       let
         username = "sooryas";
       in {
+        nixosConfigurations.macnix = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.users.${username} = import ./home.nix;
+              users.users.${username}.isNormalUser = true;
+              users.users.${username}.extraGroups = [ "wheel" "networkmanager" ];
+              users.users.${username}.password = "password"; # CHANGE this!
+            }
+          ];
+          specialArgs = { inherit inputs system username; };
+        };
+
         homeConfigurations.${username} =
           home-manager.lib.homeManagerConfiguration {
             pkgs = import nixpkgs {
@@ -25,4 +40,3 @@
           };
       });
 }
-
