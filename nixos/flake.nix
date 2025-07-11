@@ -5,18 +5,23 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    polykey-cli.url = "github:MatrixAI/Polykey-CLI";
   };
 
-  outputs = { nixpkgs, home-manager, ... }: {
-    nixosConfigurations.macnix = nixpkgs.lib.nixosSystem {
-      system = "aarch64-linux";
-      modules = [
-        ./configuration.nix
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.users.sooryas = import ./home.nix;
-        }
-      ];
+  outputs = { nixpkgs, home-manager, ... }@inputs:
+    let
+      system = "x86_64-linux";
+      username = "sooryas";
+
+    in {
+      homeConfigurations.${username} =
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          extraSpecialArgs = { inherit inputs system username; };
+          modules = [ ./home.nix ];
+        };
     };
-  };
 }
