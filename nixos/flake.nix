@@ -12,16 +12,21 @@
     let
       system = "x86_64-linux";
       username = "sooryas";
-
     in {
-      homeConfigurations.${username} =
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-          };
-          extraSpecialArgs = { inherit inputs system username; };
-          modules = [ ./home.nix ];
-        };
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs system username; };
+        modules = [
+          ./configuration.nix
+          ./hardware-configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.${username} = import ./home.nix;
+            nixpkgs.config.allowUnfree = true;
+          }
+        ];
+      };
     };
 }
